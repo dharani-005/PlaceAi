@@ -72,7 +72,7 @@ export default function StudentDashboard() {
             className="card"
           >
             <p className="text-xs text-slate-500 uppercase tracking-wide">{stat.label}</p>
-            <p className={`text-3xl font-bold mt-2 ${stat.color === 'indigo' ? 'text-indigo-400' : stat.color === 'emerald' ? 'text-emerald-400' : stat.color === 'amber' ? 'text-amber-400' : 'text-rose-400'}`}>
+            <p className={`text-3xl font-bold mt-2 ${stat.color === 'indigo' ? 'text-indigo-400' : stat.color === 'emerald' ? 'text-emerald-400' : stat.color === 'amber' ? 'text-amber-400' : 'text-rose-400'} ${stat.value === '—' ? 'opacity-40' : ''}`}>
               {stat.value}
             </p>
             <p className="text-xs text-slate-500 mt-1">{stat.sub}</p>

@@ -117,21 +117,45 @@ export default function AcademicProfile() {
             Active Backlogs
           </label>
           <div className="flex items-center gap-3">
-            {[0, 1, 2, 3, '4+'].map((n) => (
+            {[0, 1, 2, 3].map((n) => (
               <button
                 key={n}
                 type="button"
-                onClick={() => setForm({ ...form, backlog_count: typeof n === 'number' ? n : 4 })}
+                onClick={() => setForm({ ...form, backlog_count: n })}
                 className={`w-10 h-10 rounded-xl text-sm font-semibold border transition-all ${
-                  form.backlog_count === (typeof n === 'number' ? n : 4)
+                  form.backlog_count === n
                     ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
-                    : 'border-white/10 text-slate-400 hover:border-white/20'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
                 }`}
               >
                 {n}
               </button>
             ))}
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, backlog_count: Math.max(form.backlog_count, 4) })}
+              className={`w-10 h-10 rounded-xl text-sm font-semibold border transition-all ${
+                form.backlog_count >= 4
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
+                  : 'border-slate-200 text-slate-600 hover:border-slate-300'
+              }`}
+            >
+              4+
+            </button>
           </div>
+          {form.backlog_count >= 4 && (
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs text-slate-500">Exact count:</span>
+              <input
+                type="number"
+                min="4"
+                max="20"
+                className="input w-20 text-sm py-1"
+                value={form.backlog_count}
+                onChange={e => setForm({ ...form, backlog_count: Math.max(4, parseInt(e.target.value) || 4) })}
+              />
+            </div>
+          )}
           {form.backlog_count > 0 && (
             <p className="text-xs text-rose-400 mt-2 flex items-center gap-1">
               <AlertCircle className="w-3 h-3" />

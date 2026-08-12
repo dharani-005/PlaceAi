@@ -99,7 +99,7 @@ class AcademicProfile(Base):
     backlog_count = Column(Integer, nullable=False, default=0)
     branch = Column(String(100), nullable=False)
     batch_year = Column(Integer, nullable=False)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    updated_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="academic_profile")
 

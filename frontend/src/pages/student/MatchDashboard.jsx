@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   BarChart2, CheckCircle2, XCircle, ChevronDown, ChevronUp,
-  Building2, Calendar, DollarSign, Loader, ArrowUpRight,
+  Building2, Calendar, DollarSign, Loader, ArrowUpRight, AlertTriangle,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -207,6 +207,12 @@ export default function MatchDashboard() {
     queryFn: () => client.get('/jobs').then(r => r.data),
   })
 
+  const { data: resumes = [] } = useQuery({
+    queryKey: ['resumes'],
+    queryFn: () => client.get('/resume/history').then(r => r.data),
+  })
+  const hasResume = resumes.length > 0
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
@@ -225,6 +231,16 @@ export default function MatchDashboard() {
       ) : (
         <div className="space-y-4">
           <p className="text-sm text-slate-500">{jobs.length} active drive{jobs.length !== 1 ? 's' : ''} — click "Check Match" on any card</p>
+          {!hasResume && (
+            <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+              <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-amber-700">
+                You haven't uploaded a resume yet.{' '}
+                <Link to="/resume" className="font-semibold underline underline-offset-2">Upload one</Link>
+                {' '}before checking your match.
+              </p>
+            </div>
+          )}
           {jobs.map(job => <JobCard key={job.id} job={job} />)}
         </div>
       )}

@@ -17,6 +17,7 @@ class RegisterRequest(BaseModel):
     password: str = Field(min_length=6)
     full_name: str
     role: str = "student"  # "student" | "admin"
+    admin_secret: Optional[str] = None  # Required when role == "admin"
 
 
 class LoginRequest(BaseModel):

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageSquare, Send, Bot, User, Sparkles, BookOpen, RotateCcw } from 'lucide-react'
@@ -51,6 +51,8 @@ export default function Chatbot() {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
+  const textareaRef = useRef(null)
+  const hasStartedRef = useRef(false)
 
   const { data: roadmap } = useQuery({
     queryKey: ['roadmap'],
@@ -69,49 +71,49 @@ export default function Chatbot() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, sending])
 
-  // Auto-greeting when switching to mock interview mode
+  // Auto-resize textarea as content grows
   useEffect(() => {
-    if (mode === 'mock_interview' && messages.length === 0) {
-      sendMessage(null, true)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 128)}px`
     }
-  }, [mode])
+  }, [input])
 
-  const sendMessage = async (userInput, isAutoStart = false) => {
-    const content = isAutoStart ? '(Start the mock interview)' : userInput?.trim()
-    if (!content && !isAutoStart) return
+  const sendMessage = useCallback(async (userInput, isAutoStart = false) => {
+    const content = isAutoStart ? 'Please start the mock interview.' : userInput?.trim()
+    if (!content) return
 
-    const newMessages = isAutoStart
-      ? []
+    const outgoingMessages = isAutoStart
+      ? [{ role: 'user', content }]
       : [...messages, { role: 'user', content }]
 
     if (!isAutoStart) {
-      setMessages(newMessages)
+      setMessages(outgoingMessages)
       setInput('')
     }
     setSending(true)
 
     try {
-      const payload = {
-        messages: isAutoStart
-          ? [{ role: 'user', content: 'Please start the mock interview.' }]
-          : newMessages,
+      const res = await client.post('/chatbot/chat', {
+        messages: outgoingMessages,
         mode,
-      }
-      const res = await client.post('/chatbot/chat', payload)
-      setMessages(prev => [
-        ...(isAutoStart ? [] : prev),
-        ...(isAutoStart ? [] : []),
-        { role: 'assistant', content: res.data.reply },
-      ])
-      if (isAutoStart) {
-        setMessages([{ role: 'assistant', content: res.data.reply }])
-      }
+      })
+      const reply = { role: 'assistant', content: res.data.reply }
+      setMessages(isAutoStart ? [reply] : (prev) => [...prev, reply])
     } catch (err) {
       toast.error(err.response?.data?.detail || 'AI error — check your API key')
     } finally {
       setSending(false)
     }
-  }
+  }, [messages, mode])
+
+  // Auto-greeting when entering mock interview mode
+  useEffect(() => {
+    if (mode === 'mock_interview' && messages.length === 0 && !sending && !hasStartedRef.current) {
+      hasStartedRef.current = true
+      sendMessage(null, true)
+    }
+  }, [mode, messages.length, sending])
 
   const handleSend = () => {
     if (!input.trim() || sending) return
@@ -119,9 +121,13 @@ export default function Chatbot() {
   }
 
   const clearChat = () => {
+    hasStartedRef.current = false
     setMessages([])
     if (mode === 'mock_interview') {
-      setTimeout(() => sendMessage(null, true), 300)
+      setTimeout(() => {
+        hasStartedRef.current = false
+        sendMessage(null, true)
+      }, 300)
     }
   }
 
@@ -150,7 +156,7 @@ export default function Chatbot() {
             ].map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
-                onClick={() => { setMode(value); setMessages([]) }}
+                onClick={() => { hasStartedRef.current = false; setMode(value); setMessages([]) }}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   mode === value ? 'bg-indigo-500 text-white' : 'text-slate-400 hover:text-slate-200'
                 }`}
@@ -218,6 +224,7 @@ export default function Chatbot() {
       <div className="flex-shrink-0 mt-3">
         <div className="glass flex items-end gap-3 p-3">
           <textarea
+            ref={textareaRef}
             id="chat-input"
             className="flex-1 bg-transparent text-sm text-slate-200 placeholder-slate-500 resize-none outline-none min-h-[40px] max-h-32"
             placeholder={mode === 'mock_interview' ? 'Type your answer…' : 'Ask a question…'}

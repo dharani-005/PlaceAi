@@ -10,8 +10,7 @@ export default function AdminDashboard() {
     queryFn: () => client.get('/jobs').then(r => r.data),
   })
 
-  const activeJobs = jobs.filter(j => j.is_active)
-  const expiredJobs = jobs.filter(j => !j.is_active)
+  const activeJobs = jobs  // all returned jobs are active (API filters server-side)
   const soonDeadline = activeJobs.filter(j => {
     const days = Math.ceil((new Date(j.deadline) - new Date()) / 86400000)
     return days >= 0 && days <= 7
@@ -35,7 +34,7 @@ export default function AdminDashboard() {
         {[
           { label: 'Active Drives', value: activeJobs.length, icon: Briefcase, color: 'indigo' },
           { label: 'Closing in 7 days', value: soonDeadline.length, icon: Calendar, color: 'amber' },
-          { label: 'Total Posted', value: jobs.length, icon: TrendingUp, color: 'emerald' },
+          { label: 'Open Drives', value: jobs.length, icon: TrendingUp, color: 'emerald' },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}

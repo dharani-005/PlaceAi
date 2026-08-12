@@ -1,6 +1,8 @@
 """
 routers/profile.py — Academic profile create / read / update.
 """
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -33,6 +35,7 @@ def upsert_profile(
     if profile:
         for field, value in payload.model_dump().items():
             setattr(profile, field, value)
+        profile.updated_at = datetime.now(timezone.utc)
     else:
         profile = AcademicProfile(user_id=student.id, **payload.model_dump())
         db.add(profile)

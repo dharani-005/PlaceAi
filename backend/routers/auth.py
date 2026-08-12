@@ -4,12 +4,14 @@ routers/auth.py — Registration and login endpoints.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from config import get_settings
 from database import get_db
 from models import User, UserRole
 from schemas import RegisterRequest, LoginRequest, TokenResponse
 from auth import hash_password, verify_password, create_access_token
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+settings = get_settings()
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
@@ -30,6 +32,14 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="role must be 'student' or 'admin'",
         )
+
+    # Prevent open admin self-registration
+    if role == UserRole.admin:
+        if payload.admin_secret != settings.admin_registration_secret:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid admin registration secret",
+            )
 
     user = User(
         email=payload.email,

@@ -28,8 +28,8 @@ function ATSGauge({ score }) {
         />
       </svg>
       <div className="absolute text-center">
-        <p className="text-3xl font-bold text-slate-800">{Math.round(score)}</p>
-        <p className="text-xs text-slate-400">/ 100</p>
+        <p className="text-3xl font-bold" style={{ color }}>{Math.round(score)}</p>
+        <p className="text-xs text-slate-500">/ 100</p>
       </div>
     </div>
   )
@@ -195,7 +195,7 @@ export default function ResumeUpload() {
     onError: () => toast.error('Delete failed'),
   })
 
-  const handleFile = (file) => {
+  const handleFile = useCallback((file) => {
     if (!file) return
     const ext = file.name.split('.').pop().toLowerCase()
     if (!['pdf', 'docx', 'doc'].includes(ext)) {
@@ -207,13 +207,13 @@ export default function ResumeUpload() {
       return
     }
     uploadMutation.mutate(file)
-  }
+  }, [uploadMutation])
 
   const onDrop = useCallback((e) => {
     e.preventDefault()
     setDragging(false)
     handleFile(e.dataTransfer.files?.[0])
-  }, [])
+  }, [handleFile])
 
   return (
     <div className="space-y-8 animate-fade-in">

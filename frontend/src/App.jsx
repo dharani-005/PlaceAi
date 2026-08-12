@@ -1,3 +1,4 @@
+import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
@@ -19,6 +20,33 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import JobList from './pages/admin/JobList'
 import JobForm from './pages/admin/JobForm'
 import JobDetail from './pages/admin/JobDetail'
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8">
+          <p className="text-2xl font-bold text-slate-800">Something went wrong</p>
+          <p className="text-sm text-slate-500 max-w-md text-center">{this.state.error?.message}</p>
+          <button
+            className="btn-primary"
+            onClick={() => { this.setState({ hasError: false, error: null }); window.location.reload() }}
+          >
+            Reload Page
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 function ProtectedRoute({ children, requiredRole }) {
   const { user } = useAuth()
@@ -66,7 +94,9 @@ function AppRoutes() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <ErrorBoundary>
+        <AppRoutes />
+      </ErrorBoundary>
     </AuthProvider>
   )
 }

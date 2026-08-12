@@ -94,8 +94,25 @@ export default function Roadmap() {
 
   const progressMutation = useMutation({
     mutationFn: ({ itemId, status }) => client.put(`/roadmap/progress/${itemId}`, { status }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['roadmap'] }),
-    onError: () => toast.error('Could not update progress'),
+    onMutate: async ({ itemId, status }) => {
+      await qc.cancelQueries({ queryKey: ['roadmap'] })
+      const previous = qc.getQueryData(['roadmap'])
+      qc.setQueryData(['roadmap'], (old) => {
+        if (!old) return old
+        return {
+          ...old,
+          progress: old.progress.map(p =>
+            p.item_id === itemId ? { ...p, status } : p
+          ),
+        }
+      })
+      return { previous }
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previous) qc.setQueryData(['roadmap'], context.previous)
+      toast.error('Could not update progress')
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ['roadmap'] }),
   })
 
   const progressMap = Object.fromEntries((roadmap?.progress || []).map(p => [p.item_id, p]))

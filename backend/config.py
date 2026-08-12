@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     nexus_api_base_url: str
     nexus_api_key: str
 
+    # Admin registration
+    admin_registration_secret: str = "CHANGE_ME_ADMIN_SECRET"
+
     # File storage
     upload_dir: str = "uploads"
     max_file_size_mb: int = 5
