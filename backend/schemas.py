@@ -45,6 +45,14 @@ class UserOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class UserAdminUpdateRequest(BaseModel):
+    email: EmailStr
+    full_name: str
+    role: str
+    password: Optional[str] = Field(None, min_length=6)
+
+
+
 # ─── Job Descriptions ─────────────────────────────────────────────────────────
 
 class InterviewRound(BaseModel):

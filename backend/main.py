@@ -15,7 +15,7 @@ from database import engine, Base
 # Import all models so SQLAlchemy sees them before create_all
 import models  # noqa: F401
 
-from routers import auth, jobs, resume, profile, roadmap, match, chatbot
+from routers import auth, jobs, resume, profile, roadmap, match, chatbot, admin
 
 settings = get_settings()
 
@@ -62,6 +62,7 @@ app.include_router(profile.router)
 app.include_router(roadmap.router)
 app.include_router(match.router)
 app.include_router(chatbot.router)
+app.include_router(admin.router)
 
 
 @app.get("/api/health")

@@ -20,6 +20,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import JobList from './pages/admin/JobList'
 import JobForm from './pages/admin/JobForm'
 import JobDetail from './pages/admin/JobDetail'
+import AccountManagement from './pages/admin/AccountManagement'
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -83,6 +84,7 @@ function AppRoutes() {
         <Route path="jobs/new" element={<JobForm />} />
         <Route path="jobs/:id/edit" element={<JobForm />} />
         <Route path="jobs/:id/candidates" element={<JobDetail />} />
+        <Route path="accounts" element={<AccountManagement />} />
       </Route>
 
       {/* Fallback */}

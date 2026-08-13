@@ -30,7 +30,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: 'Active Drives', value: activeJobs.length, icon: Briefcase, color: 'indigo' },
           { label: 'Closing in 7 days', value: soonDeadline.length, icon: Calendar, color: 'amber' },
@@ -81,7 +81,7 @@ export default function AdminDashboard() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="glass p-4 flex items-center justify-between gap-4"
+                  className="glass p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                 >
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-slate-200">{job.company_name}</p>
@@ -96,7 +96,7 @@ export default function AdminDashboard() {
                   </div>
                   <Link
                     to={`/admin/jobs/${job.id}/candidates`}
-                    className="btn-secondary text-xs py-1.5 px-3 flex-shrink-0"
+                    className="btn-secondary text-xs py-1.5 px-3 flex-shrink-0 w-full sm:w-auto justify-center"
                   >
                     <Users className="w-3 h-3" />
                     Candidates

@@ -61,7 +61,7 @@ export default function JobList() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="glass p-5 flex items-start justify-between gap-4"
+                className="glass p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
@@ -87,7 +87,7 @@ export default function JobList() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-end sm:justify-start mt-2 sm:mt-0 border-t border-white/5 sm:border-0 pt-3 sm:pt-0">
                   <Link
                     to={`/admin/jobs/${job.id}/candidates`}
                     className="btn-secondary text-xs py-1.5 px-3"
