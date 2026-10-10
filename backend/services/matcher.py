@@ -23,6 +23,19 @@ def _get_model():
     return _model
 
 
+def warmup_matcher_model():
+    """Start warming up sentence-transformers in a background daemon thread."""
+    import threading
+    def _warmup():
+        try:
+            m = _get_model()
+            # Run one quick dummy encode so PyTorch kernels are initialized
+            m.encode(["python", "sql"], show_progress_bar=False)
+        except Exception as e:
+            print(f"[Matcher Warmup] Model warm-up error: {e}")
+    threading.Thread(target=_warmup, daemon=True).start()
+
+
 # ─── JD Skill Extraction (simple NLP) ────────────────────────────────────────
 
 # Skills and tech terms commonly found in JDs

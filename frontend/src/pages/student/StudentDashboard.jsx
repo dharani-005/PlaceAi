@@ -14,10 +14,10 @@ const features = [
 ]
 
 const colorMap = {
-  indigo: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/20',
-  emerald: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20',
-  amber: 'bg-amber-500/15 text-amber-400 border-amber-500/20',
-  rose: 'bg-rose-500/15 text-rose-400 border-rose-500/20',
+  indigo: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+  emerald: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
+  amber: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/20',
+  rose: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/20',
 }
 
 export default function StudentDashboard() {
@@ -49,11 +49,11 @@ export default function StudentDashboard() {
   const progressPct = totalItems ? Math.round((completedItems / totalItems) * 100) : 0
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in pb-8">
       {/* Header */}
       <div>
         <h1 className="page-title">Welcome back, {user?.full_name?.split(' ')[0]} 👋</h1>
-        <p className="text-slate-400 mt-1">Your placement journey at a glance</p>
+        <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Your placement journey at a glance</p>
       </div>
 
       {/* Stats row */}
@@ -71,11 +71,16 @@ export default function StudentDashboard() {
             transition={{ delay: i * 0.08 }}
             className="card"
           >
-            <p className="text-xs text-slate-500 uppercase tracking-wide">{stat.label}</p>
-            <p className={`text-3xl font-bold mt-2 ${stat.color === 'indigo' ? 'text-indigo-400' : stat.color === 'emerald' ? 'text-emerald-400' : stat.color === 'amber' ? 'text-amber-400' : 'text-rose-400'} ${stat.value === '—' ? 'opacity-40' : ''}`}>
+            <p className="text-xs uppercase tracking-wide font-bold" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
+            <p className={`text-3xl font-black mt-2 ${
+              stat.color === 'indigo' ? 'text-indigo-600 dark:text-indigo-400' :
+              stat.color === 'emerald' ? 'text-emerald-600 dark:text-emerald-400' :
+              stat.color === 'amber' ? 'text-amber-600 dark:text-amber-400' :
+              'text-rose-600 dark:text-rose-400'
+            } ${stat.value === '—' ? 'opacity-40' : ''}`}>
               {stat.value}
             </p>
-            <p className="text-xs text-slate-500 mt-1">{stat.sub}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{stat.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -89,20 +94,20 @@ export default function StudentDashboard() {
               key={to}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + i * 0.07 }}
+              transition={{ delay: 0.2 + i * 0.05 }}
             >
               <Link
                 to={to}
-                className="card group flex items-start gap-4 hover:border-indigo-500/30 hover:shadow-glow-indigo"
+                className="card group flex items-start gap-4 hover:border-purple-500/40 transition-all shadow-sm"
               >
                 <div className={`p-3 rounded-xl border ${colorMap[color]}`}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-200">{label}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
+                  <p className="font-bold text-sm sm:text-base" style={{ color: 'var(--text-primary)' }}>{label}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{desc}</p>
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all mt-1" />
+                <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 group-hover:translate-x-1 transition-all mt-1" />
               </Link>
             </motion.div>
           ))}
@@ -113,17 +118,17 @@ export default function StudentDashboard() {
       {resumes && resumes.length > 1 && (
         <div className="card">
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="w-4 h-4 text-indigo-400" />
+            <TrendingUp className="w-4 h-4 text-indigo-500" />
             <h2 className="section-title">ATS Score Progress</h2>
           </div>
           <div className="flex items-end gap-2 h-16">
-            {resumes.slice(0, 8).reverse().map((r, i) => (
+            {resumes.slice(0, 8).reverse().map((r) => (
               <div key={r.id} className="flex flex-col items-center gap-1 flex-1">
                 <div
                   className="w-full bg-indigo-500/20 rounded-t-sm transition-all duration-500"
                   style={{ height: `${(r.ats_score / 100) * 56}px`, background: `rgba(99,102,241,${0.3 + (r.ats_score / 100) * 0.7})` }}
                 />
-                <span className="text-xs text-slate-500">{r.ats_score?.toFixed(0)}</span>
+                <span className="text-xs font-mono font-semibold" style={{ color: 'var(--text-muted)' }}>{r.ats_score?.toFixed(0)}</span>
               </div>
             ))}
           </div>

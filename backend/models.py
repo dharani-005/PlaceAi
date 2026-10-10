@@ -48,6 +48,7 @@ class User(Base):
     roadmaps = relationship("Roadmap", back_populates="user", cascade="all, delete-orphan")
     match_results = relationship("MatchResult", back_populates="user", cascade="all, delete-orphan")
     job_descriptions = relationship("JobDescription", back_populates="created_by_user")
+    chat_messages = relationship("ChatMessage", back_populates="user", cascade="all, delete-orphan")
 
 
 class JobDescription(Base):
@@ -147,3 +148,16 @@ class MatchResult(Base):
     user = relationship("User", back_populates="match_results")
     job = relationship("JobDescription", back_populates="match_results")
     resume = relationship("Resume", back_populates="match_results")
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    mode = Column(String(50), nullable=False, default="qa")
+    role = Column(String(50), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="chat_messages")

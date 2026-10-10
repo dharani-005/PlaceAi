@@ -1,8 +1,10 @@
 """
 routers/match.py — Eligibility check + semantic skill match for a given JD.
 Results are cached in match_results table (per student, per job, per resume).
+Sentence-transformer model is pre-warmed on server startup for fast execution.
 """
 from uuid import UUID
+from typing import Dict, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -16,12 +18,56 @@ from services.matcher import check_eligibility, compute_skill_match
 router = APIRouter(prefix="/api/match", tags=["match"])
 
 
+@router.get("/{job_id}/quick-eligibility")
+def get_quick_eligibility(
+    job_id: UUID,
+    db: Session = Depends(get_db),
+    student: User = Depends(get_student_user),
+):
+    """
+    Ultra-fast (<1ms) academic criteria eligibility check (branch, batch, CGPA, backlogs).
+    Does not require resume parsing or model inference.
+    """
+    job = db.query(JobDescription).filter(JobDescription.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+
+    profile = db.query(AcademicProfile).filter(AcademicProfile.user_id == student.id).first()
+    if not profile:
+        return {
+            "has_profile": False,
+            "is_eligible": False,
+            "ineligibility_reasons": [{"field": "profile", "reason": "Academic profile not yet created or verified by admin."}],
+        }
+
+    profile_dict = {
+        "branch": profile.branch,
+        "batch_year": profile.batch_year,
+        "cgpa": profile.cgpa,
+        "backlog_count": profile.backlog_count,
+    }
+    job_dict = {
+        "eligible_branches": job.eligible_branches,
+        "batch_year": job.batch_year,
+        "cgpa_cutoff": job.cgpa_cutoff,
+        "backlog_allowed": job.backlog_allowed,
+    }
+
+    is_eligible, reasons = check_eligibility(profile_dict, job_dict)
+    return {
+        "has_profile": True,
+        "is_eligible": is_eligible,
+        "ineligibility_reasons": reasons,
+    }
+
+
 @router.get("/{job_id}", response_model=MatchResultOut)
 def get_match(
     job_id: UUID,
     db: Session = Depends(get_db),
     student: User = Depends(get_student_user),
 ):
+    """Full eligibility check and semantic skill matching with caching."""
     # Fetch JD
     job = db.query(JobDescription).filter(JobDescription.id == job_id).first()
     if not job:
@@ -58,7 +104,7 @@ def get_match(
     if not profile:
         raise HTTPException(
             status_code=400,
-            detail="Please fill in your academic profile before checking eligibility.",
+            detail="Please ask your Placement Cell Admin to configure your official academic profile before checking eligibility.",
         )
 
     profile_dict = {
@@ -74,14 +120,14 @@ def get_match(
         "backlog_allowed": job.backlog_allowed,
     }
 
-    # Layer 1: Eligibility
+    # Layer 1: Instant Eligibility
     is_eligible, reasons = check_eligibility(profile_dict, job_dict)
 
     match_score = None
     matched_skills = []
     missing_skills = []
 
-    # Layer 2: Skill match (only if eligible)
+    # Layer 2: Skill match (only computed if eligible)
     if is_eligible:
         skill_result = compute_skill_match(
             resume_skills=latest_resume.extracted_skills or [],

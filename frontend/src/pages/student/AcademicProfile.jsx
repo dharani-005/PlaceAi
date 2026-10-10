@@ -1,225 +1,248 @@
-import { useState, useEffect } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { motion } from 'framer-motion'
-import { Save, User, BookOpen, GraduationCap, AlertCircle, CheckCircle2 } from 'lucide-react'
-import toast from 'react-hot-toast'
+import {
+  GraduationCap, BookOpen, Calendar, ShieldCheck,
+  AlertTriangle, Lock, Award, CheckCircle2, Building, RefreshCw
+} from 'lucide-react'
 import client from '../../api/client'
 
-const BRANCHES = [
-  'CSE', 'IT', 'ECE', 'EEE', 'MECH', 'CIVIL', 'CHEM',
-  'AI/ML', 'DS', 'AIDS', 'IOT', 'CSBS', 'Other',
-]
-
 export default function AcademicProfile() {
-  const qc = useQueryClient()
-  const [form, setForm] = useState({ cgpa: '', backlog_count: 0, branch: '', batch_year: new Date().getFullYear() })
-  const [saved, setSaved] = useState(false)
-
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading, refetch, isFetching } = useQuery({
     queryKey: ['profile'],
     queryFn: () => client.get('/profile').then(r => r.data).catch(() => null),
   })
 
-  useEffect(() => {
-    if (profile) {
-      setForm({
-        cgpa: profile.cgpa,
-        backlog_count: profile.backlog_count,
-        branch: profile.branch,
-        batch_year: profile.batch_year,
-      })
-    }
-  }, [profile])
-
-  const saveMutation = useMutation({
-    mutationFn: (data) => client.put('/profile', data),
-    onSuccess: () => {
-      toast.success('Academic profile saved!')
-      qc.invalidateQueries({ queryKey: ['profile'] })
-      setSaved(true)
-      setTimeout(() => setSaved(false), 3000)
-    },
-    onError: (err) => toast.error(err.response?.data?.detail || 'Save failed'),
-  })
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const cgpa = parseFloat(form.cgpa)
-    if (isNaN(cgpa) || cgpa < 0 || cgpa > 10) {
-      toast.error('CGPA must be between 0 and 10')
-      return
-    }
-    saveMutation.mutate({ ...form, cgpa })
-  }
-
-  const cgpaVal = parseFloat(form.cgpa) || 0
+  const cgpaVal = profile?.cgpa || 0
   const cgpaColor = cgpaVal >= 8 ? 'text-emerald-400' : cgpaVal >= 6.5 ? 'text-amber-400' : 'text-rose-400'
+  const cgpaBadge = cgpaVal >= 8 ? 'First Class with Distinction' : cgpaVal >= 6.5 ? 'First Class' : 'Second Class'
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-2xl">
-      <div>
-        <h1 className="page-title">Academic Profile</h1>
-        <p className="text-slate-400 mt-1">This data is used for accurate eligibility checks — enter your actual details</p>
-      </div>
-
-      {/* Info banner */}
-      <div className="flex items-start gap-3 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-        <AlertCircle className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-indigo-300">
-          Eligibility checks use this profile, not your resume text. Enter accurate values — including any backlogs — so the results are trustworthy.
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit} className="card space-y-6">
-        {/* CGPA */}
+    <div className="space-y-8 animate-fade-in max-w-4xl pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <label className="label">
-            <GraduationCap className="w-4 h-4 inline mr-1" />
-            CGPA (out of 10)
-          </label>
-          <div className="flex items-center gap-4">
-            <input
-              id="cgpa"
-              type="number"
-              step="0.01"
-              min="0"
-              max="10"
-              className="input max-w-xs"
-              placeholder="e.g. 8.25"
-              value={form.cgpa}
-              onChange={(e) => setForm({ ...form, cgpa: e.target.value })}
-              required
-            />
-            {form.cgpa && (
-              <motion.span
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className={`text-2xl font-bold ${cgpaColor}`}
-              >
-                {parseFloat(form.cgpa).toFixed(2)}
-              </motion.span>
-            )}
-          </div>
-          {/* CGPA visual bar */}
-          <div className="mt-2 progress-bar-track max-w-xs">
-            <motion.div
-              className={`progress-bar-fill ${cgpaVal >= 8 ? 'bg-emerald-500' : cgpaVal >= 6.5 ? 'bg-amber-500' : 'bg-rose-500'}`}
-              animate={{ width: `${(cgpaVal / 10) * 100}%` }}
-              transition={{ duration: 0.4 }}
-            />
-          </div>
+          <h1 className="page-title flex items-center gap-2.5">
+            <span>Academic Profile</span>
+            <span className="badge badge-emerald text-xs flex items-center gap-1 font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Official Record
+            </span>
+          </h1>
+          <p className="text-slate-400 mt-1">
+            Verified academic credentials used to determine your placement drive eligibility
+          </p>
         </div>
+        <button
+          onClick={() => refetch()}
+          disabled={isFetching}
+          className="btn-ghost text-xs flex items-center gap-1.5 self-start sm:self-auto"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </div>
 
-        {/* Backlogs */}
-        <div>
-          <label className="label">
-            <BookOpen className="w-4 h-4 inline mr-1" />
-            Active Backlogs
-          </label>
-          <div className="flex items-center gap-3">
-            {[0, 1, 2, 3].map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setForm({ ...form, backlog_count: n })}
-                className={`w-10 h-10 rounded-xl text-sm font-semibold border transition-all ${
-                  form.backlog_count === n
-                    ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
-                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => setForm({ ...form, backlog_count: Math.max(form.backlog_count, 4) })}
-              className={`w-10 h-10 rounded-xl text-sm font-semibold border transition-all ${
-                form.backlog_count >= 4
-                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
-                  : 'border-slate-200 text-slate-600 hover:border-slate-300'
-              }`}
-            >
-              4+
-            </button>
+      {/* Lock Notice Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-start gap-3.5 shadow-sm"
+      >
+        <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 flex-shrink-0 mt-0.5">
+          <Lock className="w-4 h-4" />
+        </div>
+        <div className="text-xs space-y-1">
+          <p className="font-semibold text-indigo-200">
+            Managed Solely by Placement Cell Administration
+          </p>
+          <p className="text-indigo-300/80 leading-relaxed">
+            For academic integrity, students cannot directly edit their CGPA, branch, or backlog count.
+            Drive eligibility filters automatically query this record.
+            If your marks have updated or you spot a discrepancy, contact your department placement coordinator for verification.
+          </p>
+        </div>
+      </motion.div>
+
+      {/* Loading state */}
+      {isLoading ? (
+        <div className="flex justify-center py-24">
+          <div className="spinner scale-125" />
+        </div>
+      ) : !profile ? (
+        /* Unconfigured profile state */
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass p-10 text-center rounded-2xl border border-white/5 space-y-4"
+        >
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-400">
+            <AlertTriangle className="w-8 h-8" />
           </div>
-          {form.backlog_count >= 4 && (
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-slate-500">Exact count:</span>
-              <input
-                type="number"
-                min="4"
-                max="20"
-                className="input w-20 text-sm py-1"
-                value={form.backlog_count}
-                onChange={e => setForm({ ...form, backlog_count: Math.max(4, parseInt(e.target.value) || 4) })}
-              />
-            </div>
-          )}
-          {form.backlog_count > 0 && (
-            <p className="text-xs text-rose-400 mt-2 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" />
-              Backlog restrictions apply to some drives
+          <div className="space-y-1.5 max-w-md mx-auto">
+            <h3 className="text-lg font-bold text-slate-100">No Academic Profile Found</h3>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              The placement administration has not yet recorded your verified CGPA, branch, and backlog details.
+              Please reach out to the Placement Cell Admin to publish your official profile so you can check eligibility for upcoming recruitment drives.
             </p>
-          )}
-        </div>
-
-        {/* Branch */}
-        <div>
-          <label className="label">
-            <User className="w-4 h-4 inline mr-1" />
-            Branch / Department
-          </label>
-          <select
-            id="branch"
-            className="input"
-            value={form.branch}
-            onChange={(e) => setForm({ ...form, branch: e.target.value })}
-            required
-          >
-            <option value="">Select your branch…</option>
-            {BRANCHES.map(b => <option key={b} value={b}>{b}</option>)}
-          </select>
-        </div>
-
-        {/* Batch year */}
-        <div>
-          <label className="label">Graduating Batch Year</label>
-          <input
-            id="batch_year"
-            type="number"
-            min="2020"
-            max="2030"
-            className="input max-w-xs"
-            value={form.batch_year}
-            onChange={(e) => setForm({ ...form, batch_year: parseInt(e.target.value) })}
-            required
-          />
-        </div>
-
-        {/* Submit */}
-        <div className="flex items-center gap-3 pt-2">
-          <button
-            id="save-profile"
-            type="submit"
-            disabled={saveMutation.isPending}
-            className="btn-primary"
-          >
-            {saveMutation.isPending ? <span className="spinner" /> : <Save className="w-4 h-4" />}
-            Save Profile
-          </button>
-          {saved && (
-            <motion.span
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-1 text-sm text-emerald-400"
+          </div>
+        </motion.div>
+      ) : (
+        /* Verified Profile Display */
+        <div className="space-y-6">
+          {/* Top Metric Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* CGPA */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="glass p-5 rounded-2xl border border-white/5 relative overflow-hidden"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              Saved!
-            </motion.span>
-          )}
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <GraduationCap className="w-4 h-4 text-purple-400" />
+                  Cumulative CGPA
+                </span>
+                <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded-full">Scale of 10</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className={`text-4xl font-extrabold ${cgpaColor}`}>
+                  {profile.cgpa.toFixed(2)}
+                </span>
+                <span className="text-xs text-slate-500">/ 10.0</span>
+              </div>
+              <div className="mt-3 progress-bar-track">
+                <motion.div
+                  className={`progress-bar-fill ${cgpaVal >= 8 ? 'bg-emerald-500' : cgpaVal >= 6.5 ? 'bg-amber-500' : 'bg-rose-500'}`}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(cgpaVal / 10) * 100}%` }}
+                  transition={{ duration: 1 }}
+                />
+              </div>
+              <p className="text-[11px] text-slate-400 mt-2 font-medium">{cgpaBadge}</p>
+            </motion.div>
+
+            {/* Backlogs */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="glass p-5 rounded-2xl border border-white/5"
+            >
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <BookOpen className="w-4 h-4 text-rose-400" />
+                  Active Backlogs
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className={`text-4xl font-extrabold ${profile.backlog_count === 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {profile.backlog_count}
+                </span>
+                <span className="text-xs text-slate-500">standing</span>
+              </div>
+              <div className="mt-4">
+                {profile.backlog_count === 0 ? (
+                  <span className="badge badge-emerald text-[11px] flex items-center gap-1 w-fit">
+                    <CheckCircle2 className="w-3 h-3" />
+                    All Cleared (No Backlogs)
+                  </span>
+                ) : (
+                  <span className="badge badge-rose text-[11px] flex items-center gap-1 w-fit">
+                    <AlertTriangle className="w-3 h-3" />
+                    {profile.backlog_count} Standing Backlog(s)
+                  </span>
+                )}
+              </div>
+            </motion.div>
+
+            {/* Branch */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="glass p-5 rounded-2xl border border-white/5"
+            >
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <Building className="w-4 h-4 text-cyan-400" />
+                  Branch
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-slate-100 truncate" title={profile.branch}>
+                {profile.branch}
+              </p>
+              <p className="text-xs text-slate-500 mt-4">Engineering Specialization</p>
+            </motion.div>
+
+            {/* Batch Year */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="glass p-5 rounded-2xl border border-white/5"
+            >
+              <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-indigo-400" />
+                  Batch Year
+                </span>
+              </div>
+              <p className="text-2xl font-bold text-slate-100">
+                {profile.batch_year}
+              </p>
+              <p className="text-xs text-slate-500 mt-4">Graduation Class</p>
+            </motion.div>
+          </div>
+
+          {/* Official Verification Details Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="glass p-6 rounded-2xl border border-white/5 space-y-4"
+          >
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                  <Award className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-100">Placement Cell Institutional Verification</h3>
+                  <p className="text-xs text-slate-400">Official College Placement Cell Record</p>
+                </div>
+              </div>
+              <span className="badge badge-emerald text-xs">Status: Verified</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-1">
+              <div className="p-3.5 rounded-xl bg-white/2 border border-white/5">
+                <span className="text-slate-400 block mb-1">Campus Placement Eligibility:</span>
+                <span className="text-slate-200 font-medium">
+                  {profile.backlog_count === 0 && profile.cgpa >= 7.0
+                    ? 'Eligible for Dream & Super-Dream campus recruitment drives'
+                    : profile.backlog_count === 0
+                    ? 'Eligible for standard campus placement drives'
+                    : 'Eligibility depends on company backlog threshold allowances'}
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-white/2 border border-white/5">
+                <span className="text-slate-400 block mb-1">Last Admin Record Update:</span>
+                <span className="text-slate-200 font-medium">
+                  {profile.updated_at
+                    ? new Date(profile.updated_at).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    : 'Initial Placement Enrolment'}
+                </span>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </form>
+      )}
     </div>
   )
 }

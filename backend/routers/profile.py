@@ -1,15 +1,14 @@
 """
-routers/profile.py — Academic profile create / read / update.
+routers/profile.py — Student view of academic profile.
+Students are strictly read-only; academic profiles must be created and edited by the Placement Admin.
 """
-from datetime import datetime, timezone
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from database import get_db
 from dependencies import get_student_user
-from models import User, AcademicProfile, MatchResult
-from schemas import ProfileUpsertRequest, ProfileOut
+from models import User, AcademicProfile
+from schemas import ProfileOut
 
 router = APIRouter(prefix="/api/profile", tags=["profile"])
 
@@ -21,28 +20,19 @@ def get_profile(
 ):
     profile = db.query(AcademicProfile).filter(AcademicProfile.user_id == student.id).first()
     if not profile:
-        raise HTTPException(status_code=404, detail="Academic profile not found. Please create one.")
+        raise HTTPException(
+            status_code=404,
+            detail="Official academic profile has not been configured yet. Please contact your placement administrator to verify and enter your academic details.",
+        )
     return profile
 
 
-@router.put("", response_model=ProfileOut)
-def upsert_profile(
-    payload: ProfileUpsertRequest,
-    db: Session = Depends(get_db),
+@router.put("")
+def student_cannot_edit_profile(
     student: User = Depends(get_student_user),
 ):
-    profile = db.query(AcademicProfile).filter(AcademicProfile.user_id == student.id).first()
-    if profile:
-        for field, value in payload.model_dump().items():
-            setattr(profile, field, value)
-        profile.updated_at = datetime.now(timezone.utc)
-    else:
-        profile = AcademicProfile(user_id=student.id, **payload.model_dump())
-        db.add(profile)
-    
-    # Invalidate cached match results for this student
-    db.query(MatchResult).filter(MatchResult.user_id == student.id).delete()
-    
-    db.commit()
-    db.refresh(profile)
-    return profile
+    """Direct modification by students is blocked for academic integrity."""
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Academic records are locked for students. Only the Placement Cell Administrator can create or update academic profiles.",
+    )

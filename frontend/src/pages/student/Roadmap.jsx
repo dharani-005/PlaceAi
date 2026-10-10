@@ -46,7 +46,7 @@ function RoadmapItem({ item, progress, onStatusChange }) {
       layout
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className={`glass p-4 flex gap-4 items-start group cursor-pointer hover:border-white/10 transition-all`}
+      className="card p-4 flex gap-4 items-start group cursor-pointer hover:border-purple-500/40 transition-all shadow-sm"
       onClick={() => onStatusChange(item.id, nextStatus)}
     >
       <div className={`mt-0.5 p-2 rounded-xl ${cfg.bg} flex-shrink-0`}>
@@ -54,15 +54,15 @@ function RoadmapItem({ item, progress, onStatusChange }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className="font-semibold text-slate-200 text-sm">{item.title}</p>
+          <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{item.title}</p>
           {item.category && (
             <span className={`badge ${CATEGORY_COLORS[item.category] || 'badge-slate'} flex-shrink-0 text-xs`}>
               {item.category}
             </span>
           )}
         </div>
-        <p className="text-xs text-slate-400 mt-1 leading-relaxed">{item.description}</p>
-        <p className={`text-xs mt-2 ${cfg.color}`}>{cfg.label} · Click to advance</p>
+        <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{item.description}</p>
+        <p className={`text-xs mt-2 font-semibold ${cfg.color}`}>{cfg.label} · Click to advance</p>
       </div>
     </motion.div>
   )

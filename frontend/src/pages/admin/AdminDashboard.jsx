@@ -17,11 +17,13 @@ export default function AdminDashboard() {
   })
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex items-start justify-between">
+    <div className="space-y-8 animate-fade-in pb-8">
+      <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="page-title">Placement Cell Dashboard</h1>
-          <p className="text-slate-400 mt-1">Manage job drives and track candidate matches</p>
+          <p className="text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+            Manage job drives and track candidate matches
+          </p>
         </div>
         <Link to="/admin/jobs/new" className="btn-primary">
           <PlusCircle className="w-4 h-4" />
@@ -34,7 +36,7 @@ export default function AdminDashboard() {
         {[
           { label: 'Active Drives', value: activeJobs.length, icon: Briefcase, color: 'indigo' },
           { label: 'Closing in 7 days', value: soonDeadline.length, icon: Calendar, color: 'amber' },
-          { label: 'Open Drives', value: jobs.length, icon: TrendingUp, color: 'emerald' },
+          { label: 'Total Postings', value: jobs.length, icon: TrendingUp, color: 'emerald' },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
@@ -44,14 +46,14 @@ export default function AdminDashboard() {
             className="card"
           >
             <div className={`inline-flex p-2 rounded-xl mb-3 ${
-              stat.color === 'indigo' ? 'bg-indigo-500/15 text-indigo-400'
-              : stat.color === 'amber' ? 'bg-amber-500/15 text-amber-400'
-              : 'bg-emerald-500/15 text-emerald-400'
+              stat.color === 'indigo' ? 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
+              : stat.color === 'amber' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400'
+              : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
             }`}>
               <stat.icon className="w-5 h-5" />
             </div>
-            <p className="text-3xl font-bold text-slate-100">{stat.value}</p>
-            <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
+            <p className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{stat.value}</p>
+            <p className="text-xs mt-1 font-semibold" style={{ color: 'var(--text-muted)' }}>{stat.label}</p>
           </motion.div>
         ))}
       </div>
@@ -59,14 +61,14 @@ export default function AdminDashboard() {
       {/* Recent drives */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="section-title">Active Drives</h2>
+          <h2 className="section-title">Active Recruitment Drives</h2>
           <Link to="/admin/jobs" className="btn-ghost text-xs">View all <ArrowRight className="w-3 h-3" /></Link>
         </div>
 
         {activeJobs.length === 0 ? (
-          <div className="card text-center py-12 text-slate-500">
-            <Briefcase className="w-10 h-10 mx-auto mb-3 opacity-30" />
-            <p>No active drives yet</p>
+          <div className="card text-center py-12">
+            <Briefcase className="w-10 h-10 mx-auto mb-3 opacity-30" style={{ color: 'var(--text-muted)' }} />
+            <p style={{ color: 'var(--text-muted)' }}>No active drives posted yet</p>
             <Link to="/admin/jobs/new" className="btn-primary mt-4 inline-flex">
               <PlusCircle className="w-4 h-4" /> Post First Job
             </Link>
@@ -81,24 +83,24 @@ export default function AdminDashboard() {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.05 }}
-                  className="glass p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="card p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-purple-500/30"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-200">{job.company_name}</p>
-                    <p className="text-sm text-indigo-400">{job.role_title}</p>
-                    <div className="flex items-center gap-3 mt-1.5">
+                    <p className="font-bold text-sm sm:text-base" style={{ color: 'var(--text-primary)' }}>{job.company_name}</p>
+                    <p className="text-xs sm:text-sm text-indigo-600 dark:text-indigo-400 font-semibold">{job.role_title}</p>
+                    <div className="flex items-center gap-2.5 mt-1.5 flex-wrap">
                       {job.ctc && <span className="badge badge-emerald text-xs">{job.ctc}</span>}
                       <span className={`badge text-xs ${days <= 3 ? 'badge-rose' : days <= 7 ? 'badge-amber' : 'badge-slate'}`}>
                         {days < 0 ? 'Expired' : `${days}d left`}
                       </span>
-                      <span className="text-xs text-slate-500">{job.eligible_branches.join(', ')}</span>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>{job.eligible_branches.join(', ')}</span>
                     </div>
                   </div>
                   <Link
                     to={`/admin/jobs/${job.id}/candidates`}
                     className="btn-secondary text-xs py-1.5 px-3 flex-shrink-0 w-full sm:w-auto justify-center"
                   >
-                    <Users className="w-3 h-3" />
+                    <Users className="w-3.5 h-3.5" />
                     Candidates
                   </Link>
                 </motion.div>

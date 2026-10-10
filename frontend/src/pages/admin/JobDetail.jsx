@@ -79,12 +79,12 @@ export default function JobDetail() {
           </p>
         </div>
       ) : (
-        <div className="glass overflow-hidden">
+        <div className="card overflow-hidden p-0">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/5">
+              <tr className="border-b border-slate-200 dark:border-white/10" style={{ background: 'var(--bg-card2)' }}>
                 {['Rank', 'Name', 'Branch', 'CGPA', 'Match Score', 'Matched Skills'].map(h => (
-                  <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                  <th key={h} className="px-5 py-3 text-left text-xs font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                     {h}
                   </th>
                 ))}
@@ -97,21 +97,21 @@ export default function JobDetail() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: i * 0.03 }}
-                  className="border-b border-white/5 hover:bg-white/3 transition-colors"
+                  className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
                 >
                   <td className="px-5 py-4">
-                    <span className={`font-bold text-lg ${i < 3 ? medalColors[i] : 'text-slate-400'}`}>
-                      {i < 3 ? <Trophy className="w-4 h-4 inline" /> : null} #{c.rank}
+                    <span className={`font-black text-base ${i < 3 ? medalColors[i] : 'text-slate-400'}`}>
+                      {i < 3 ? <Trophy className="w-4 h-4 inline mr-1" /> : null} #{c.rank}
                     </span>
                   </td>
                   <td className="px-5 py-4">
-                    <p className="font-medium text-slate-200 text-sm">{c.full_name}</p>
+                    <p className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{c.full_name}</p>
                   </td>
                   <td className="px-5 py-4">
-                    <span className="badge badge-slate">{c.branch}</span>
+                    <span className="badge badge-slate font-semibold">{c.branch}</span>
                   </td>
                   <td className="px-5 py-4">
-                    <span className={`font-semibold text-sm ${c.cgpa >= 8 ? 'text-emerald-400' : c.cgpa >= 6.5 ? 'text-amber-400' : 'text-slate-300'}`}>
+                    <span className={`font-bold text-sm ${c.cgpa >= 8 ? 'text-emerald-600 dark:text-emerald-400' : c.cgpa >= 6.5 ? 'text-amber-600 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
                       {c.cgpa.toFixed(2)}
                     </span>
                   </td>
@@ -123,7 +123,7 @@ export default function JobDetail() {
                           style={{ width: `${c.match_score}%` }}
                         />
                       </div>
-                      <span className={`text-sm font-bold ${c.match_score >= 70 ? 'text-emerald-400' : c.match_score >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
+                      <span className={`text-sm font-extrabold ${c.match_score >= 70 ? 'text-emerald-600 dark:text-emerald-400' : c.match_score >= 40 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'}`}>
                         {c.match_score.toFixed(1)}%
                       </span>
                     </div>

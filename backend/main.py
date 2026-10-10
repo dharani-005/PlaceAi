@@ -29,8 +29,20 @@ async def lifespan(app: FastAPI):
     # Ensure uploads directory exists
     Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
 
-    print("✅ Database tables ready")
-    print(f"✅ Upload directory: {settings.upload_dir}")
+    # Pre-warm sentence-transformer model in background thread for instant match checks
+    from services.matcher import warmup_matcher_model
+    warmup_matcher_model()
+
+    import sys
+    if hasattr(sys.stdout, 'reconfigure'):
+        try:
+            sys.stdout.reconfigure(encoding='utf-8')
+        except Exception:
+            pass
+
+    print("[OK] Database tables ready")
+    print(f"[OK] Upload directory: {settings.upload_dir}")
+    print("[INFO] Matcher AI model warmup initiated")
 
     yield
 

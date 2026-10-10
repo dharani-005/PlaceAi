@@ -61,24 +61,24 @@ export default function JobList() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className="glass p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
+                className="card p-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-bold text-slate-200">{job.company_name}</p>
+                    <p className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{job.company_name}</p>
                     <span className={`badge ${job.is_active ? 'badge-emerald' : 'badge-slate'}`}>
                       {job.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </div>
-                  <p className="text-sm text-indigo-400 mt-0.5">{job.role_title}</p>
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400 font-semibold mt-0.5">{job.role_title}</p>
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
-                    {job.ctc && <span className="text-xs text-emerald-400">{job.ctc}</span>}
-                    <span className={`text-xs ${days < 0 ? 'text-rose-400' : days <= 7 ? 'text-amber-400' : 'text-slate-400'}`}>
+                    {job.ctc && <span className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">{job.ctc}</span>}
+                    <span className={`text-xs ${days < 0 ? 'text-rose-500' : days <= 7 ? 'text-amber-500' : 'text-slate-500'}`}>
                       <Calendar className="w-3 h-3 inline mr-1" />
                       {days < 0 ? 'Expired' : `${days}d left — ${new Date(job.deadline).toLocaleDateString('en-IN')}`}
                     </span>
-                    {job.cgpa_cutoff && <span className="text-xs text-slate-400">CGPA ≥ {job.cgpa_cutoff}</span>}
-                    <span className="text-xs text-slate-500">Batch {job.batch_year}</span>
+                    {job.cgpa_cutoff && <span className="text-xs" style={{ color: 'var(--text-muted)' }}>CGPA ≥ {job.cgpa_cutoff}</span>}
+                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Batch {job.batch_year}</span>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {job.eligible_branches.map(b => (

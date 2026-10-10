@@ -13,15 +13,24 @@ export function AuthProvider({ children }) {
   })
 
   const login = useCallback((tokenData) => {
-    // tokenData = { access_token, role, full_name, user_id }
+    // tokenData = { access_token, role, full_name, user_id, email? }
     localStorage.setItem('token', tokenData.access_token)
     const u = {
       role: tokenData.role,
       full_name: tokenData.full_name,
       user_id: tokenData.user_id,
+      email: tokenData.email || '',
     }
     localStorage.setItem('user', JSON.stringify(u))
     setUser(u)
+  }, [])
+
+  const updateUser = useCallback((updatedFields) => {
+    setUser((prev) => {
+      const updated = { ...prev, ...updatedFields }
+      localStorage.setItem('user', JSON.stringify(updated))
+      return updated
+    })
   }, [])
 
   const logout = useCallback(() => {
@@ -31,7 +40,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAdmin: user?.role === 'admin' }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, isAdmin: user?.role === 'admin' }}>
       {children}
     </AuthContext.Provider>
   )

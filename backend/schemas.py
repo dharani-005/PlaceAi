@@ -33,6 +33,17 @@ class TokenResponse(BaseModel):
     user_id: str
 
 
+class AdminCreateRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6)
+    full_name: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=6)
+
+
 # ─── User ─────────────────────────────────────────────────────────────────────
 
 class UserOut(BaseModel):
@@ -49,7 +60,37 @@ class UserAdminUpdateRequest(BaseModel):
     email: EmailStr
     full_name: str
     role: str
-    password: Optional[str] = Field(None, min_length=6)
+    password: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        v = v.strip()
+        if not v:
+            return None
+        if len(v) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        return v
+
+
+class AdminSelfUpdateRequest(BaseModel):
+    email: EmailStr
+    full_name: str
+    password: Optional[str] = None
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return None
+        v = v.strip()
+        if not v:
+            return None
+        if len(v) < 6:
+            raise ValueError("Password must be at least 6 characters")
+        return v
 
 
 
@@ -222,6 +263,16 @@ class ChatMessage(BaseModel):
     content: str
 
 
+class ChatMessageOut(BaseModel):
+    id: uuid.UUID
+    mode: str
+    role: str
+    content: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 class ChatRequest(BaseModel):
     messages: List[ChatMessage]
     mode: str = "qa"  # "qa" | "mock_interview"
@@ -230,6 +281,22 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
     mode: str
+
+
+class BulletRewrite(BaseModel):
+    original: str
+    improved: str
+    impact_factor: str
+
+
+class ResumeAIImproveResponse(BaseModel):
+    summary: str
+    overall_rating: str
+    missing_skills: List[str]
+    suggested_skills: List[str]
+    bullet_rewrites: List[BulletRewrite]
+    ats_action_plan: List[str]
+    target_role_fit: str
 
 
 # ─── Admin: Candidate ranking ─────────────────────────────────────────────────

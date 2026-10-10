@@ -5,6 +5,7 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, Users, Shield, Sparkles } from 'lu
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import client from '../api/client'
+import ThemeToggle from '../components/ThemeToggle'
 
 export default function Login() {
   const [mode, setMode] = useState('login')
@@ -25,7 +26,7 @@ export default function Login() {
       } else {
         res = await client.post('/auth/register', { ...form, role })
       }
-      login(res.data)
+      login({ ...res.data, email: form.email.trim().lower ? form.email.trim().toLowerCase() : form.email })
       toast.success(`Welcome, ${res.data.full_name}!`)
       navigate(res.data.role === 'admin' ? '/admin' : '/dashboard')
     } catch (err) {
@@ -117,7 +118,10 @@ export default function Login() {
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-shrink-0 w-full lg:w-[480px] flex items-center justify-center p-6 lg:p-12 relative z-10">
+      <div className="flex-shrink-0 w-full lg:w-[480px] flex flex-col justify-center items-center p-6 lg:p-12 relative z-10">
+        <div className="w-full max-w-[420px] flex justify-end mb-4">
+          <ThemeToggle />
+        </div>
         <motion.div
           initial={{ opacity:0, x:30 }}
           animate={{ opacity:1, x:0 }}

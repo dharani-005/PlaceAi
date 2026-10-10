@@ -5,6 +5,7 @@ import {
   LayoutDashboard, FileText, User, Map, BarChart2,
   MessageSquare, LogOut, Sparkles, Menu, X,
 } from 'lucide-react'
+import ThemeToggle from './ThemeToggle'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -32,7 +33,7 @@ export default function StudentLayout() {
         background:'radial-gradient(circle, rgba(147,51,234,0.04) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
       
       {/* Mobile Header */}
-      <header className="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-white/5 lg:hidden relative z-20" style={{ backgroundColor: 'var(--sidebar-bg)' }}>
+      <header className="flex items-center justify-between px-4 py-3 border-b border-white/5 lg:hidden relative z-20" style={{ backgroundColor: 'var(--sidebar-bg)' }}>
         <button 
           onClick={() => setSidebarOpen(true)}
           className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/5 focus:outline-none"
@@ -50,7 +51,7 @@ export default function StudentLayout() {
           </div>
           <span style={{ fontWeight:800, fontSize:'1rem', background:'linear-gradient(135deg,#c084fc,#38bdf8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>PlaceAI</span>
         </div>
-        <div className="w-8"></div> {/* Spacer to center brand title */}
+        <ThemeToggle />
       </header>
 
       {/* Backdrop for mobile */}
@@ -69,7 +70,7 @@ export default function StudentLayout() {
         style={{ backgroundColor: 'var(--sidebar-bg)' }}
       >
         {/* Brand */}
-        <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between gap-1">
+        <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between gap-1">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <div style={{
@@ -82,14 +83,17 @@ export default function StudentLayout() {
               </div>
               <span style={{ fontWeight:800, fontSize:'1.125rem', background:'linear-gradient(135deg,#c084fc,#38bdf8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>PlaceAI</span>
             </div>
-            <p className="text-xs text-slate-500 font-medium tracking-wide uppercase">Student Portal</p>
+            <p className="text-[11px] text-slate-500 font-medium tracking-wide uppercase">Student Portal</p>
           </div>
-          <button 
-            onClick={() => setSidebarOpen(false)}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/5 lg:hidden"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle className="hidden lg:flex" />
+            <button 
+              onClick={() => setSidebarOpen(false)}
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-white/5 lg:hidden"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Nav */}
@@ -110,25 +114,34 @@ export default function StudentLayout() {
         </nav>
 
         {/* User info & logout */}
-        <div className="px-3 py-4 border-t border-white/5">
-          <div className="px-4 py-3 rounded-xl mb-3 border border-white/5" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
-            <p className="text-sm font-semibold text-slate-200 truncate">{user?.full_name}</p>
-            <p className="text-xs text-purple-400 font-medium mt-0.5">Student Profile</p>
+        <div className="px-3 py-3 border-t border-white/5 space-y-2">
+          <div className="px-3.5 py-2.5 rounded-xl border border-white/5" style={{ backgroundColor: 'rgba(255,255,255,0.02)' }}>
+            <div className="flex items-center justify-between gap-1">
+              <p className="text-xs font-bold text-slate-200 truncate">{user?.full_name}</p>
+              <span className="badge badge-purple text-[9px] uppercase font-bold py-0.5 px-1.5">Student</span>
+            </div>
+            <p className="text-[11px] text-slate-400 truncate mt-0.5">{user?.email || 'Student Account'}</p>
           </div>
-          <button onClick={handleLogout} className="sidebar-link w-full text-rose-400 hover:text-rose-300 hover:bg-rose-500/10">
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+
+          <div className="flex flex-col gap-1">
+            <button
+              onClick={handleLogout}
+              className="sidebar-link w-full text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 py-1.5"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              Logout
+            </button>
+          </div>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-y-auto bg-grid relative z-10">
-        <div className="p-4 sm:p-6 lg:p-8 min-h-full">
+      <main className="flex-1 overflow-y-auto bg-grid relative z-10 flex flex-col">
+        <div className="p-4 sm:p-5 lg:p-6 min-h-full flex-1 flex flex-col">
           <Outlet />
         </div>
       </main>
+
     </div>
   )
 }
-

@@ -14,9 +14,9 @@ from config import get_settings
 from database import get_db
 from dependencies import get_current_user, get_student_user
 from models import User, Resume
-from schemas import ResumeOut
+from schemas import ResumeOut, ResumeAIImproveResponse
 from services.resume_parser import parse_resume
-from services.ats_scorer import compute_ats_score
+from services.ats_scorer import compute_ats_score, generate_llm_resume_improvements
 
 settings = get_settings()
 router = APIRouter(prefix="/api/resume", tags=["resume"])
@@ -118,3 +118,29 @@ def delete_resume(
 
     db.delete(resume)
     db.commit()
+
+
+@router.post("/{resume_id}/ai-improve", response_model=ResumeAIImproveResponse)
+async def get_resume_ai_improvements(
+    resume_id: UUID,
+    db: Session = Depends(get_db),
+    student: User = Depends(get_student_user),
+):
+    """
+    Leverages Nexus LLM to analyze the student's resume, recommending
+    high-impact skills to add, STAR-format bullet rewrites, and ATS action plan.
+    """
+    resume = db.query(Resume).filter(
+        Resume.id == resume_id, Resume.user_id == student.id
+    ).first()
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    try:
+        improvements = await generate_llm_resume_improvements(
+            resume_text=resume.extracted_text or "",
+            extracted_skills=resume.extracted_skills or [],
+        )
+        return improvements
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"AI improvement generation error: {str(e)}")
